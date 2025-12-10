@@ -70,9 +70,6 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
   ///
   /// Parameters:
   /// - [assetPackName]: The name of the asset pack to fetch.
-  /// - [count]: The number of assets in the asset pack.
-  /// - [namingPattern]: The naming pattern for the assets (e.g.,
-  ///   "asset_%d").
   /// - [fileExtension]: The file extension for the assets (e.g.,
   ///   "png", "mp3").
   ///
@@ -85,11 +82,8 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
   /// - [UnsupportedError] if the platform is unsupported.
   @override
   Future<String?> getAssetPackPath({
-    required String
-    assetPackName, // specify the name of the asset pack to fetch
-    required int count, // specify the number of assets in the pack to fetch
-    required String namingPattern, // specify the naming pattern of the assets
-    required String fileExtension, // Specify the file extension for the asset
+    required String assetPackName,
+    required String fileExtension,
   }) async {
     String? assetPath;
 
@@ -104,9 +98,7 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
       if (Platform.isIOS) {
         assetPath = await methodChannel.invokeMethod('getDownloadResources', {
           'tag': assetPackName,
-          'namingPattern': namingPattern,
-          'assetRange': count,
-          'extension': fileExtension,
+          'fileExtension': fileExtension,
         });
         return assetPath;
       }

@@ -12,14 +12,10 @@ class AssetDelivery {
 
   static Future<String?> getAssetPackPath({
     required String assetPackName,
-    required int count,
-    required String namingPattern,
     required String fileExtension,
   }) {
     return AssetDeliveryPlatform.instance.getAssetPackPath(
       assetPackName: assetPackName,
-      count: count,
-      namingPattern: namingPattern,
       fileExtension: fileExtension,
     );
   }

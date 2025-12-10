@@ -43,7 +43,7 @@ public class AssetDeliveryPlugin: NSObject, FlutterPlugin {
         
         resourceRequest.beginAccessingResources { [weak self] error in
             guard let self = self else { return }
-            
+
             if let error = error {
                 self.cleanupProgressObservation()
                 result(FlutterError(
@@ -53,18 +53,17 @@ public class AssetDeliveryPlugin: NSObject, FlutterPlugin {
                 ))
                 return
             }
-            
-            self.handleResourceAccess(tag: tag, args: args, result: result)
+
+            self.handleResourceAccess(tag: tag, args: args, resourceRequest: resourceRequest, result: result)
             resourceRequest.endAccessingResources()
         }
     }
 
-    private func handleResourceAccess(tag: String, args: [String: Any], result: @escaping FlutterResult) {
+    private func handleResourceAccess(tag: String, args: [String: Any], resourceRequest: NSBundleResourceRequest, result: @escaping FlutterResult) {
         let fileManager = FileManager.default
         let dir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
         let subfolderURL = dir.appendingPathComponent(tag)
-        
-        
+
         do {
             try fileManager.createDirectory(at: subfolderURL, withIntermediateDirectories: true, attributes: nil)
         } catch {
@@ -76,53 +75,58 @@ public class AssetDeliveryPlugin: NSObject, FlutterPlugin {
             ))
             return
         }
-        let range = args["assetRange"] as? Int ?? 1
-        let namingPattern = args["namingPattern"] as? String ?? "\(tag.uppercased())_%d"
-        let fileExtension = args["extension"] as? String ?? "mp3"
 
-        for i in 1...range {  // Provide dynamic range, customize if needed
-            let assetName = String(format: namingPattern, i)
-            if let image = UIImage(named: assetName) {
-            // Save image as PNG or JPG
-            let fileURL = subfolderURL.appendingPathComponent("\(assetName).png")
-            if let imageData = image.pngData() {
-                do {
-                    try imageData.write(to: fileURL)
-                } catch {
-                    cleanupProgressObservation()
-                    result(FlutterError(
-                        code: "ERROR_SAVING_IMAGE",
-                        message: "Error saving image \(fileURL) for tag: \(tag)",
-                        details: error.localizedDescription
-                    ))
-                    return
-                }
-            }
-        } else if let asset = NSDataAsset(name: assetName) {
-            // Save as raw data for videos, sounds, etc.
-            let fileURL = subfolderURL.appendingPathComponent("\(assetName).\(fileExtension)")
-            do {
-                try asset.data.write(to: fileURL)
-            } catch {
-                cleanupProgressObservation()
-                result(FlutterError(
-                    code: "ERROR_SAVING_FILE",
-                    message: "Error saving file \(fileURL) for tag: \(tag)",
-                    details: error.localizedDescription
-                ))
-                return
-            }
-        } else {
+        // Get fileExtension parameter
+        guard let fileExtension = args["fileExtension"] as? String else {
             cleanupProgressObservation()
             result(FlutterError(
-                code: "RESOURCE_NOT_FOUND",
-                message: "Resource not found for tag: \(tag), asset: \(assetName)",
+                code: "INVALID_ARGUMENT",
+                message: "fileExtension not provided",
                 details: nil
             ))
             return
-            }
         }
-        
+
+        // Get all resources from the downloaded bundle
+        guard let bundleURL = resourceRequest.bundle.url(forResource: nil, withExtension: nil) else {
+            cleanupProgressObservation()
+            result(FlutterError(
+                code: "BUNDLE_NOT_FOUND",
+                message: "Could not find bundle URL for tag: \(tag)",
+                details: nil
+            ))
+            return
+        }
+
+        do {
+            let bundle = Bundle(url: bundleURL)
+
+            guard let resourceURLs = bundle?.urls(forResourcesWithExtension: fileExtension, subdirectory: nil) else {
+                cleanupProgressObservation()
+                result(FlutterError(
+                    code: "NO_RESOURCES_FOUND",
+                    message: "No resources found in bundle for tag: \(tag)",
+                    details: nil
+                ))
+                return
+            }
+
+            // Copy all resources to the destination folder
+            for resourceURL in resourceURLs {
+                let destinationURL = subfolderURL.appendingPathComponent(resourceURL.lastPathComponent)
+                try fileManager.copyItem(at: resourceURL, to: destinationURL)
+            }
+
+        } catch {
+            cleanupProgressObservation()
+            result(FlutterError(
+                code: "ERROR_COPYING_RESOURCES",
+                message: "Error copying resources for tag: \(tag)",
+                details: error.localizedDescription
+            ))
+            return
+        }
+
         cleanupProgressObservation()
         result(subfolderURL.absoluteString)
     }

@@ -130,16 +130,11 @@ You can test your iOS app by running it from Xcode on a real device or simulator
   ```dart
     final path = await assetDelivery.getAssetPackPath(
       assetPackName: widget.assetPackName,
-      count: widget.assetsCount,
-      namingPattern: widget.namingPattern,
-      fileExtension: widget.fileExtension,
     );
+    
     Parameters:
-
     assetPackName: The name of the asset pack.
-    count: The number of assets in the pack.
-    namingPattern: The naming convention for the assets.
-    fileExtension: The file extension of the assets (e.g., 'mp3').
+    fileExtension: The file fileExtension of the assets (e.g., 'mp3').
   ```
 
 4. Check for keyword "COMPLETED" from the status to be sure the assets completely downloaded
