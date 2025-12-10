@@ -111,9 +111,14 @@ assetPack {
     );
     print('Created AndroidManifest.xml for $assetPackName.');
 
-    final assetsDir = Directory('${androidDir.path}/src/main/assets');
+    final assetsDir = Directory(
+      '${androidDir.path}/src/main/assets/$assetPackName',
+    );
     assetsDir.createSync(recursive: true);
-    print('Created src/main/assets directories for $assetPackName.');
+    print(
+      'Created src/main/assets/$assetPackName directories for $assetPackName.',
+    );
+    print('Put your assets in the assets/$assetPackName directory');
   } else {
     print('Asset pack directory "$assetPackName" already exists.');
   }

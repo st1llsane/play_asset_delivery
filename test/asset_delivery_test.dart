@@ -9,6 +9,12 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 class MockAssetDeliveryPlatform
     with MockPlatformInterfaceMixin
     implements AssetDeliveryPlatform {
+  MockAssetDeliveryPlatform({this.assetBasePath});
+
+  String? lastAssetPackName;
+  String? lastFileExtension;
+  final String? assetBasePath;
+
   @override
   Future<void> fetch(String assetPackName) async {
     // Simulate a successful fetch call.
@@ -29,9 +35,15 @@ class MockAssetDeliveryPlatform
     required String assetPackName,
     required String fileExtension,
   }) async {
-    return null;
+    lastAssetPackName = assetPackName;
+    lastFileExtension = fileExtension;
+
+    if (assetBasePath == null) {
+      return null;
+    }
 
     // Simulate fetching asset pack state.
+    return '$assetBasePath/$assetPackName';
   }
 
   @override
@@ -58,6 +70,31 @@ void main() {
     MockAssetDeliveryPlatform fakePlatform = MockAssetDeliveryPlatform();
     AssetDeliveryPlatform.instance = fakePlatform;
   });
+
+  // TODO: This test does not work
+  test(
+    'getAssetPackPath returns Android asset path with pack name appended',
+    () async {
+      const assetPackName = 'android_pack';
+      const fileExtension = 'png';
+      const assetBasePath = '/data/user/0/com.example.app/files/assetpacks';
+
+      final mockPlatform = MockAssetDeliveryPlatform(
+        assetBasePath: assetBasePath,
+      );
+
+      AssetDeliveryPlatform.instance = mockPlatform;
+
+      final assetPath = await AssetDelivery.getAssetPackPath(
+        assetPackName: assetPackName,
+        fileExtension: fileExtension,
+      );
+
+      expect(mockPlatform.lastAssetPackName, assetPackName);
+      expect(mockPlatform.lastFileExtension, fileExtension);
+      expect(assetPath, '$assetBasePath/$assetPackName');
+    },
+  );
 
   test('fetch method', () async {
     const assetPackName = 'samplePack';

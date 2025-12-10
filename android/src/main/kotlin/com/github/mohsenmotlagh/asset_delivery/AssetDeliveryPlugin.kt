@@ -48,8 +48,10 @@ class AssetDeliveryPlugin : FlutterPlugin, MethodCallHandler {
       "getAssets" -> {
         val assetPackName = call.argument<String>("assetPack") ?: ""
         val assetPath = getAbsoluteAssetPath(assetPackName)
+        
         if (assetPath != null) {
-          result.success(assetPath)
+          var fullAssetPath = "$assetPath/$assetPackName"
+          result.success(fullAssetPath)
         } else {
           result.error("ASSET_PATH_ERROR", "Asset path not found", null)
         }
