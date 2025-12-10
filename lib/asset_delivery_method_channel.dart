@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -13,6 +14,8 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
   final progressChannel = const MethodChannel('on_demand_resources_progress');
 
   static void Function(String status, double progress)? onStatusChange;
+
+  StreamController<StatusMap>? _statusController;
 
   /// Fetches the specified asset pack from the platform.
   ///
@@ -44,8 +47,9 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
   @override
   Future<void> fetchAssetPackState(String assetPackName) async {
     try {
-      await methodChannel
-          .invokeMethod('fetchAssetPackState', {'assetPack': assetPackName});
+      await methodChannel.invokeMethod('fetchAssetPackState', {
+        'assetPack': assetPackName,
+      });
     } on PlatformException catch (e) {
       debugPrint("Failed to fetch asset pack state: ${e.message}");
     }
@@ -75,7 +79,7 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
   @override
   Future<String?> getAssetPackPath({
     required String
-        assetPackName, // specify the name of the asset pack to fetch
+    assetPackName, // specify the name of the asset pack to fetch
     required int count, // specify the number of assets in the pack to fetch
     required String namingPattern, // specify the naming pattern of the assets
     required String fileExtension, // Specify the file extension for the asset
@@ -83,8 +87,9 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
     String? assetPath;
     try {
       if (Platform.isAndroid) {
-        assetPath = await methodChannel
-            .invokeMethod('getAssets', {'assetPack': assetPackName});
+        assetPath = await methodChannel.invokeMethod('getAssets', {
+          'assetPack': assetPackName,
+        });
       } else if (Platform.isIOS) {
         assetPath = await methodChannel.invokeMethod('getDownloadResources', {
           'tag': assetPackName,
@@ -96,6 +101,36 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
         debugPrint('Unsupported platform');
         throw UnsupportedError('Platform not supported');
       }
+    } on PlatformException catch (e) {
+      debugPrint("Failed to fetch asset pack path: ${e.message}");
+      return null;
+    } on UnsupportedError catch (e) {
+      debugPrint("Error: ${e.message}");
+      return null;
+    }
+    return assetPath;
+  }
+
+  /// Gets the file path for the specified install-time asset pack.
+  ///
+  /// The install time asset pack is fetched from the split-APK
+  /// Parameters:
+  /// - [assetPackName]: The name of the asset pack to fetch.
+  ///
+  /// Returns:
+  /// - A [String] representing the path to the asset pack folder, or `null`
+  ///   if an error occurs.
+  ///
+  /// Throws:
+  /// - [PlatformException] if an error occurs on the platform side.
+  /// - [UnsupportedError] if the platform is unsupported.
+  @override
+  Future<Uint8List?> getInstallTimeAssetBytes(String relativeAssetPath) async {
+    Uint8List? assetPath;
+    try {
+      assetPath = await methodChannel.invokeMethod('getInstallTimeAssetBytes', {
+        'assetPack': relativeAssetPath,
+      });
     } on PlatformException catch (e) {
       debugPrint("Failed to fetch asset pack path: ${e.message}");
       return null;
@@ -125,8 +160,9 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
     if (Platform.isAndroid) {
       methodChannel.setMethodCallHandler((call) async {
         if (call.method == 'onAssetPackStatusChange') {
-          Map<String, dynamic> statusMap =
-              Map<String, dynamic>.from(call.arguments);
+          Map<String, dynamic> statusMap = Map<String, dynamic>.from(
+            call.arguments,
+          );
           onUpdate(statusMap);
         }
       });
@@ -143,6 +179,51 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
       debugPrint('Unsupported platform for progress updates');
     }
   }
+
+  @override
+  Stream<StatusMap> watchAssetPackStatus(String assetPackName) {
+    // Return existing stream if already created
+    if (_statusController != null && !_statusController!.isClosed) {
+      return _statusController!.stream;
+    }
+
+    _statusController = StreamController<StatusMap>.broadcast(
+      onListen: _startListening,
+      onCancel: _stopListening,
+    );
+
+    return _statusController!.stream;
+  }
+
+  void _startListening() {
+    if (Platform.isAndroid) {
+      methodChannel.setMethodCallHandler((call) async {
+        if (call.method == 'onAssetPackStatusChange') {
+          Map<String, dynamic> statusMap = Map<String, dynamic>.from(
+            call.arguments,
+          );
+          _statusController?.add(StatusMap.fromJson(statusMap));
+        }
+      });
+    } else if (Platform.isIOS) {
+      progressChannel.setMethodCallHandler((call) async {
+        if (call.method == 'updateProgress') {
+          double? progress = call.arguments as double?;
+          _statusController?.add(
+            StatusMap.fromJson({
+              'status': 'downloading',
+              'downloadProgress': progress ?? 0.0,
+            }),
+          );
+        }
+      });
+    }
+  }
+
+  void _stopListening() {
+    methodChannel.setMethodCallHandler(null);
+    progressChannel.setMethodCallHandler(null);
+  }
 }
 
 /// Represents the status of an asset pack download.
@@ -152,6 +233,6 @@ class StatusMap {
   StatusMap({required this.status, required this.downloadProgress});
 
   StatusMap.fromJson(Map<String, dynamic> json)
-      : status = json['status'],
-        downloadProgress = json['downloadProgress'];
+    : status = json['status'],
+      downloadProgress = json['downloadProgress'];
 }

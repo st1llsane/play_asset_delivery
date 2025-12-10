@@ -8,7 +8,6 @@ import io.flutter.plugin.common.MethodChannel
 class AssetPackStateListener(
     private var methodChannel: MethodChannel
 ) : (AssetPackState) -> Unit {
-
     override fun invoke(assetPackState: AssetPackState) {
         when (assetPackState.status()) {
             AssetPackStatus.PENDING -> {
@@ -31,7 +30,7 @@ class AssetPackStateListener(
             }
             AssetPackStatus.COMPLETED -> {
                 Log.d("asset status", "COMPLETED")
-                sendStatusToFlutter("COMPLETED", 100.0)
+                sendStatusToFlutter("COMPLETED", 1.0)
             }
             AssetPackStatus.FAILED -> {
                 Log.d("asset status", "FAILED")
@@ -50,7 +49,8 @@ class AssetPackStateListener(
                 sendStatusToFlutter("Unknown status.", 0.0)
             }
             AssetPackStatus.WAITING_FOR_WIFI -> {
-                // TODO()
+                Log.d("asset status", "WAITING_FOR_WIFI")
+                sendStatusToFlutter("Waiting For Wifi", 0.0)
             }
         }
     }
