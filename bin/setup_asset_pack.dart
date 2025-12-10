@@ -23,8 +23,9 @@ Future<void> main(List<String> arguments) async {
 
   final lines = settingsContent.split('\n');
   if (!lines.contains(includeStatement)) {
-    final insertIndex =
-        lines.indexWhere((line) => line.trim() == 'include ":app"');
+    final insertIndex = lines.indexWhere(
+      (line) => line.trim() == 'include ":app"',
+    );
     if (insertIndex != -1) {
       lines.insert(insertIndex + 1, includeStatement);
     } else {
@@ -43,7 +44,8 @@ Future<void> main(List<String> arguments) async {
 
     // Create build.gradle.kts for the asset pack
     final buildGradleFile = File('${androidDir.path}/build.gradle.kts');
-    buildGradleFile.writeAsStringSync('''
+    buildGradleFile.writeAsStringSync(
+      '''
         plugins {
             id("com.android.asset-pack")
         }
@@ -55,14 +57,16 @@ Future<void> main(List<String> arguments) async {
             }
         }
       '''
-        .trim());
+          .trim(),
+    );
     print('Created build.gradle.kts for $assetPackName.');
 
     // Create AndroidManifest.xml for the asset pack
     final manifestDir = Directory('${androidDir.path}/manifest');
     manifestDir.createSync(recursive: true);
     final manifestFile = File('${manifestDir.path}/AndroidManifest.xml');
-    manifestFile.writeAsStringSync('''
+    manifestFile.writeAsStringSync(
+      '''
         <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
                   xmlns:dist="http://schemas.android.com/apk/distribution" 
                   package="basePackage" 
@@ -75,7 +79,8 @@ Future<void> main(List<String> arguments) async {
           </dist:module>
         </manifest>
       '''
-        .trim());
+          .trim(),
+    );
     print('Created AndroidManifest.xml for $assetPackName.');
   } else {
     print('Asset pack directory "$assetPackName" already exists.');
@@ -95,8 +100,11 @@ Future<void> main(List<String> arguments) async {
     appBuildGradleContent = appBuildGradleContent.replaceAllMapped(
       assetPacksPattern,
       (match) {
-        final existingPacks =
-            match.group(1)!.split(',').map((e) => e.trim()).toList();
+        final existingPacks = match
+            .group(1)!
+            .split(',')
+            .map((e) => e.trim())
+            .toList();
         if (!existingPacks.contains('":$assetPackName"')) {
           existingPacks.add('":$assetPackName"');
           return 'assetPacks = [${existingPacks.join(', ')}]';

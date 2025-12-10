@@ -31,7 +31,7 @@ class AssetDeliveryPlugin: FlutterPlugin, MethodCallHandler {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "asset_delivery")
     channel.setMethodCallHandler(this)
 
-    // Initialize AssetPackManager and register AssetPackStateListener
+    // Initialize AssetPackManager and register com.github.mohsenmotlagh.asset_delivery.AssetPackStateListener
     manager = AssetPackManagerFactory.getInstance(flutterPluginBinding.applicationContext)
     assetPackStateListener = AssetPackStateListener(channel)
     manager.registerListener(assetPackStateListener)
