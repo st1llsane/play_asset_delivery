@@ -16,3 +16,8 @@
 
 ## 1.1.0
    - Improve the script for adding the necessary code for Android
+
+## 1.2.0
+   - Raise the minimum supported Flutter version to 3.38.0 and update Dart SDK guidance.
+   - Update Android tooling to Android Gradle Plugin 8.5 and Kotlin 1.9.24 with the latest coroutine library.
+   - Adopt `flutter_lints` 6.0.0 and refresh documentation with the new setup requirements.

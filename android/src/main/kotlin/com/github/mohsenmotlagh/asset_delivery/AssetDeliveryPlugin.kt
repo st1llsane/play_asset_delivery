@@ -19,7 +19,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-/** AssetDeliveryPlugin */
 class AssetDeliveryPlugin: FlutterPlugin, MethodCallHandler {
   
   private lateinit var channel : MethodChannel

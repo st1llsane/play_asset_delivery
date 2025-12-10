@@ -1,6 +1,6 @@
 name: asset_delivery
 description: "A Flutter plugin for managing on-demand asset delivery with Play Asset Delivery, supporting asset pack setup, progress tracking, and persistent storage."
-version: 0.0.1
+version: 1.2.0
 homepage: https://github.com/mohsen-motlagh/asset_delivery
 
 environment:
@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  plugin_platform_interface: ^2.0.2
+  plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
   flutter_test:
