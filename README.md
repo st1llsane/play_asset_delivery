@@ -142,7 +142,42 @@ You can test your iOS app by running it from Xcode on a real device or simulator
 ### Example
 [Example App](https://github.com/mohsen-motlagh/asset_delivery_example)
 
-### Suppor
+---
+
+## Testing
+
+The plugin includes comprehensive tests for the setup command and the plugin functionality.
+
+### Running Tests
+
+To run all tests:
+```bash
+flutter test
+```
+
+To run specific test files:
+```bash
+# Test the setup_asset_pack command
+flutter test test/setup_asset_pack_test.dart
+
+# Test the plugin functionality
+flutter test test/asset_delivery_test.dart
+```
+
+### Setup Command Tests
+
+The `setup_asset_pack_test.dart` file includes tests for:
+- Error handling when no arguments are provided
+- Error handling for invalid delivery types
+- Creating asset packs with different delivery types (on-demand, install-time, fast-follow)
+- Preventing duplicate asset pack creation
+- Updating app/build.gradle with assetPacks configuration
+
+These tests use temporary directories to simulate a Flutter project structure and verify that the setup command creates all necessary files correctly.
+
+---
+
+### Support
 Please support the plugin by give a thumbs up in pub.dev and github
 
 ### Contributions

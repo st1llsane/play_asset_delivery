@@ -73,16 +73,16 @@ Future<void> main(List<String> arguments) async {
 
     buildGradleFile.writeAsStringSync(
       '''
-        plugins {
-            id("com.android.asset-pack")
-        }
+plugins {
+    id("com.android.asset-pack")
+}
 
-        assetPack {
-            packName.set("$assetPackName")
-            dynamicDelivery {
-                deliveryType.set("$deliveryType")
-            }
-        }
+assetPack {
+    packName.set("$assetPackName")
+    dynamicDelivery {
+        deliveryType.set("$deliveryType")
+    }
+}
       '''
           .trim(),
     );
@@ -91,24 +91,29 @@ Future<void> main(List<String> arguments) async {
     // Create AndroidManifest.xml for the asset pack
     final manifestDir = Directory('${androidDir.path}/manifest');
     manifestDir.createSync(recursive: true);
+
     final manifestFile = File('${manifestDir.path}/AndroidManifest.xml');
     manifestFile.writeAsStringSync(
       '''
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
-                  xmlns:dist="http://schemas.android.com/apk/distribution" 
-                  package="basePackage" 
-                  split="$assetPackName">
-          <dist:module dist:type="asset-pack">
-            <dist:fusing dist:include="true" />    
-            <dist:delivery>
-              <dist:$deliveryType/>
-            </dist:delivery>
-          </dist:module>
-        </manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+  xmlns:dist="http://schemas.android.com/apk/distribution" 
+  package="basePackage" 
+  split="$assetPackName">
+  <dist:module dist:type="asset-pack">
+    <dist:fusing dist:include="true" />    
+    <dist:delivery>
+      <dist:$deliveryType/>
+    </dist:delivery>
+  </dist:module>
+</manifest>
       '''
           .trim(),
     );
     print('Created AndroidManifest.xml for $assetPackName.');
+
+    final assetsDir = Directory('${androidDir.path}/src/main/assets');
+    assetsDir.createSync(recursive: true);
+    print('Created src/main/assets directories for $assetPackName.');
   } else {
     print('Asset pack directory "$assetPackName" already exists.');
   }
