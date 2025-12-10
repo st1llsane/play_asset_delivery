@@ -10,11 +10,6 @@ class AssetDelivery {
     return AssetDeliveryPlatform.instance.fetch(assetPackName);
   }
 
-  /// Fetches the state of an asset pack by name.
-  static Future<void> fetchAssetPackState(String assetPackName) {
-    return AssetDeliveryPlatform.instance.fetchAssetPackState(assetPackName);
-  }
-
   static Future<String?> getAssetPackPath({
     required String assetPackName,
     required int count,
@@ -29,18 +24,23 @@ class AssetDelivery {
     );
   }
 
-  static Future<Uint8List?> getInstallTimeAssetBytes(String relativeAssetPath) {
-    return AssetDeliveryPlatform.instance.getInstallTimeAssetBytes(
-      relativeAssetPath,
-    );
+  /// Fetches the state of an asset pack by name.
+  static Future<void> fetchAssetPackState(String assetPackName) {
+    return AssetDeliveryPlatform.instance.fetchAssetPackState(assetPackName);
+  }
+
+  /// Sets up a listener for asset pack state updates.
+  static void getAssetPackStatus(Function(Map<String, dynamic>) onUpdate) {
+    AssetDeliveryPlatform.instance.getAssetPackStatus(onUpdate);
   }
 
   static Stream<StatusMap> watchAssetPackStatus(String assetPackName) {
     return AssetDeliveryPlatform.instance.watchAssetPackStatus(assetPackName);
   }
 
-  /// Sets up a listener for asset pack state updates.
-  static void getAssetPackStatus(Function(Map<String, dynamic>) onUpdate) {
-    AssetDeliveryPlatform.instance.getAssetPackStatus(onUpdate);
+  static Future<Uint8List?> getInstallTimeAssetBytes(String relativeAssetPath) {
+    return AssetDeliveryPlatform.instance.getInstallTimeAssetBytes(
+      relativeAssetPath,
+    );
   }
 }

@@ -6,12 +6,15 @@ import 'package:flutter/services.dart';
 
 import 'asset_delivery_platform_interface.dart';
 
-/// An implementation of [AssetDeliveryPlatform] that uses method channels.
+/// An implementation of [AssetDeliveryPlatform] that uses method
+/// channels.
 class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel('asset_delivery');
-  final progressChannel = const MethodChannel('on_demand_resources_progress');
+  final progressChannel = const MethodChannel(
+    'asset_on_demand_resources_progress',
+  );
 
   static void Function(String status, double progress)? onStatusChange;
 
@@ -19,9 +22,9 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
 
   /// Fetches the specified asset pack from the platform.
   ///
-  /// This method triggers the platform's asset delivery mechanism to download
-  /// the specified asset pack. It is particularly useful for on-demand
-  /// resources.
+  /// This method triggers the platform's asset delivery mechanism to
+  /// download the specified asset pack. It is particularly useful for
+  /// on-demand resources.
   ///
   /// - [assetPackName]: The name of the asset pack to fetch.
   ///
@@ -38,12 +41,14 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
 
   /// Fetches the state of the specified asset pack.
   ///
-  /// This method retrieves the current state (e.g., downloading, completed) of
-  /// the specified asset pack.
+  /// This method retrieves the current state (e.g., downloading,
+  /// completed) of the specified asset pack.
   ///
-  /// - [assetPackName]: The name of the asset pack whose state is to be fetched.
+  /// - [assetPackName]: The name of the asset pack whose state is to
+  ///   be fetched.
   ///
-  /// If the operation fails, a message is logged but no exception is thrown.
+  /// If the operation fails, a message is logged but no exception is
+  /// thrown.
   @override
   Future<void> fetchAssetPackState(String assetPackName) async {
     try {
@@ -57,21 +62,23 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
 
   /// Gets the file path for the specified asset pack.
   ///
-  /// This method determines the storage location of an asset pack, downloading
-  /// it if necessary, depending on the platform:
+  /// This method determines the storage location of an asset pack,
+  /// downloading it if necessary, depending on the platform:
   /// - On Android, it fetches the asset pack path.
-  /// - On iOS, it downloads the assets and returns the path to the folder where
-  ///   the resources are stored.
+  /// - On iOS, it downloads the assets and returns the path to the
+  ///   folder where the resources are stored.
   ///
   /// Parameters:
   /// - [assetPackName]: The name of the asset pack to fetch.
   /// - [count]: The number of assets in the asset pack.
-  /// - [namingPattern]: The naming pattern for the assets (e.g., "asset_%d").
-  /// - [fileExtension]: The file extension for the assets (e.g., "png", "mp3").
+  /// - [namingPattern]: The naming pattern for the assets (e.g.,
+  ///   "asset_%d").
+  /// - [fileExtension]: The file extension for the assets (e.g.,
+  ///   "png", "mp3").
   ///
   /// Returns:
-  /// - A [String] representing the path to the asset pack folder, or `null`
-  ///   if an error occurs.
+  /// - A [String] representing the path to the asset pack folder, or
+  ///   `null` if an error occurs.
   ///
   /// Throws:
   /// - [PlatformException] if an error occurs on the platform side.
@@ -85,22 +92,27 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
     required String fileExtension, // Specify the file extension for the asset
   }) async {
     String? assetPath;
+
     try {
       if (Platform.isAndroid) {
         assetPath = await methodChannel.invokeMethod('getAssets', {
           'assetPack': assetPackName,
         });
-      } else if (Platform.isIOS) {
+        return assetPath;
+      }
+
+      if (Platform.isIOS) {
         assetPath = await methodChannel.invokeMethod('getDownloadResources', {
           'tag': assetPackName,
           'namingPattern': namingPattern,
           'assetRange': count,
           'extension': fileExtension,
         });
-      } else {
-        debugPrint('Unsupported platform');
-        throw UnsupportedError('Platform not supported');
+        return assetPath;
       }
+
+      debugPrint('Unsupported platform');
+      throw UnsupportedError('Platform not supported');
     } on PlatformException catch (e) {
       debugPrint("Failed to fetch asset pack path: ${e.message}");
       return null;
@@ -108,7 +120,6 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
       debugPrint("Error: ${e.message}");
       return null;
     }
-    return assetPath;
   }
 
   /// Gets the file path for the specified install-time asset pack.
@@ -118,8 +129,8 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
   /// - [assetPackName]: The name of the asset pack to fetch.
   ///
   /// Returns:
-  /// - A [String] representing the path to the asset pack folder, or `null`
-  ///   if an error occurs.
+  /// - A [String] representing the path to the asset pack folder, or
+  ///   `null` if an error occurs.
   ///
   /// Throws:
   /// - [PlatformException] if an error occurs on the platform side.
@@ -143,12 +154,12 @@ class MethodChannelAssetDelivery extends AssetDeliveryPlatform {
 
   /// Subscribes to asset pack status updates.
   ///
-  /// This method listens for updates about the status of asset pack downloads
-  /// (e.g., "downloading", "completed") and passes the information to the
-  /// provided callback function.
+  /// This method listens for updates about the status of asset pack
+  /// downloads (e.g., "downloading", "completed") and passes the
+  /// information to the provided callback function.
   ///
-  /// - [onUpdate]: A callback function that takes a [Map<String, dynamic>] with
-  ///   status details.
+  /// - [onUpdate]: A callback function that takes a [Map<String,
+  ///   dynamic>] with status details.
   ///
   /// Supported platforms:
   /// - Android: Listens for `onAssetPackStatusChange` events.

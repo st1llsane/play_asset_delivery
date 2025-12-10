@@ -8,7 +8,7 @@ public class AssetDeliveryPlugin: NSObject, FlutterPlugin {
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "asset_delivery", binaryMessenger: registrar.messenger())
-        let progressChannel = FlutterMethodChannel(name: "on_demand_resources_progress", binaryMessenger: registrar.messenger())
+        let progressChannel = FlutterMethodChannel(name: "asset_on_demand_resources_progress", binaryMessenger: registrar.messenger())
         
         let instance = AssetDeliveryPlugin()
         instance.methodChannel = channel

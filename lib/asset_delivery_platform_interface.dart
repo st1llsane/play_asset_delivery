@@ -18,14 +18,17 @@ abstract class AssetDeliveryPlatform extends PlatformInterface {
   static AssetDeliveryPlatform get instance => _instance;
 
   /// Platform-specific implementations should set this with their own
-  /// platform-specific class that extends [AssetDeliveryPlatform] when
-  /// they register themselves.
+  /// platform-specific class that extends [AssetDeliveryPlatform]
+  /// when they register themselves.
+  ///
+  /// Useful for testing.
   static set instance(AssetDeliveryPlatform instance) {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
 
   Future<void> fetch(String assetPackName);
+
   Future<void> fetchAssetPackState(String assetPackName);
 
   Stream<StatusMap> watchAssetPackStatus(String assetPackName);
