@@ -83,6 +83,7 @@ assetPack {
         deliveryType.set("$deliveryType")
     }
 }
+
       '''
           .trim(),
     );
@@ -96,16 +97,17 @@ assetPack {
     manifestFile.writeAsStringSync(
       '''
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
-  xmlns:dist="http://schemas.android.com/apk/distribution" 
-  package="basePackage" 
-  split="$assetPackName">
-  <dist:module dist:type="asset-pack">
-    <dist:fusing dist:include="true" />    
-    <dist:delivery>
-      <dist:$deliveryType/>
-    </dist:delivery>
-  </dist:module>
+    xmlns:dist="http://schemas.android.com/apk/distribution" 
+    package="basePackage" 
+    split="$assetPackName">
+    <dist:module dist:type="asset-pack">
+        <dist:fusing dist:include="true" />    
+        <dist:delivery>
+            <dist:$deliveryType />
+        </dist:delivery>
+    </dist:module>
 </manifest>
+
       '''
           .trim(),
     );
